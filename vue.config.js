@@ -1,21 +1,22 @@
 /*
  * @Author: wei.yafei
- * @Date: 2019-10-16 14:29:50
- * @Last Modified by: wei.yafei 
- * @Last Modified time: 2019-10-16 14:31:24
+ * @Date: 2019-10-16 16:53:13
+ * @Last Modified by: wei.yafei
+ * @Last Modified time: 2019-10-16 16:55:41
  */
-
-/* eslint-disable no-unused-vars */
+const path = require("path");
+const poststylus = require("poststylus");
+const pxtorem = require("postcss-pxtorem");
 
 //使用uglify-js进行js文件的压缩。
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 
-// 拼接路径
-const resolve = dir => require("path").join(__dirname, dir);
-
 // 增加环境变量
 process.env.VUE_APP_VERSION = require("./package.json").version;
 process.env.VUE_APP_BUILD_TIME = require("dayjs")().format("YYYY-M-D HH:mm:ss");
+
+// 拼接路径
+const resolve = file => path.resolve(__dirname, file);
 
 // 基础路径 注意发布之前要先修改这里
 let publicPath = "./";
@@ -45,6 +46,29 @@ module.exports = {
       // 设置 scss 公用变量文件
       sass: {
         data: '@import "@/assets/style/settings.scss";'
+      },
+      stylus: {
+        use: [
+          poststylus([
+            pxtorem({
+              rootValue: 100,
+              propWhiteList: [],
+              minPixelValue: 2
+            }),
+            "autoprefixer"
+          ])
+        ],
+        import: [resolve("./src/assets/theme.custom")]
+      },
+      postcss: {
+        plugins: [
+          require("postcss-pxtorem")({
+            rootValue: 100,
+            propWhiteList: [],
+            minPixelValue: 2
+          }),
+          require("autoprefixer")()
+        ]
       }
     }
   },
@@ -110,5 +134,6 @@ module.exports = {
   },
   devServer: {
     open: true
-  }
+  },
+  transpileDependencies: ["mand-mobile"]
 };
